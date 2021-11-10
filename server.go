@@ -58,10 +58,10 @@ func handleClient(c net.Conn, port string) {
 
 		//if it's not a disconnection we send the message to all clients
 		//excluding the sender
-		if msg != "disconnect" || !strings.Contains(msg, ":") {
+		if msg != "disconnect" {
 			for i := 0; i < len(connections); i++ {
-				fmt.Println(ports[i], port)
-				if c != connections[i] && ports[i] == port {
+				if c != connections[i] && ports[i] == port && !strings.Contains(msg, ":9") {
+					fmt.Println(msg)
 					err := gob.NewEncoder(connections[i]).Encode(msg)
 					if err != nil {
 						fmt.Println(err)
