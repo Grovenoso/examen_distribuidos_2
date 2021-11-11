@@ -21,9 +21,6 @@ func runClient(userName, port string, status chan int, msg chan string) {
 
 	var message, received string
 
-	//welcome message
-	message = port
-
 	//always listening
 	go func() {
 		defer c.Close()
@@ -43,7 +40,7 @@ func runClient(userName, port string, status chan int, msg chan string) {
 		case _status := <-status:
 			//first connection
 			if _status == 0 {
-				err = gob.NewEncoder(c).Encode(message)
+				err = gob.NewEncoder(c).Encode(port)
 				if err != nil {
 					fmt.Println(err)
 					return

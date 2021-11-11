@@ -94,7 +94,7 @@ func main() {
 	go rpcMiddleware()
 
 	//holding middleware running
-	fmt.Println("\nStarting middleware...")
+	fmt.Println("\nRunning middleware...")
 	var input string
 	fmt.Scanln(&input)
 }

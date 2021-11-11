@@ -21,7 +21,7 @@ func getServerPorts() []string {
 	return nil
 }
 
-func getServerTopics() []string {
+func getServerTopics_Admin() []string {
 	conn, err := rpc.Dial("tcp", ":9995")
 	if err != nil {
 		fmt.Println(err)
@@ -37,7 +37,7 @@ func getServerTopics() []string {
 	return nil
 }
 
-func getServerUsers() []int {
+func getServerUsers_Admin() []int {
 	conn, err := rpc.Dial("tcp", ":9995")
 	if err != nil {
 		fmt.Println(err)
@@ -54,8 +54,8 @@ func getServerUsers() []int {
 }
 
 func updateServerState() {
-	options := getServerTopics()
-	users := getServerUsers()
+	options := getServerTopics_Admin()
+	users := getServerUsers_Admin()
 	ports := getServerPorts()
 
 	for i := 0; i < len(options); i++ {

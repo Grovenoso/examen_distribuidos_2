@@ -49,6 +49,7 @@ func server(port, thematic string) {
 
 func handleClient(c net.Conn, port string) {
 	var msg string
+	var found bool
 	for {
 		err := gob.NewDecoder(c).Decode(&msg)
 
@@ -61,7 +62,18 @@ func handleClient(c net.Conn, port string) {
 		//we add the username to the slice
 		if strings.Contains(msg, ":") {
 			receive := strings.Split(msg, ":")
-			ports = append(ports, receive[1])
+
+			found = false
+			for i := range ports {
+				if ports[i] == receive[1] {
+					found = true
+				}
+			}
+			if !found {
+				ports = append(ports, receive[1])
+			}
+			serverPorts = append(serverPorts, receive[1])
+
 			switch port {
 			case "9997":
 				chatUsers[0]++
@@ -76,7 +88,7 @@ func handleClient(c net.Conn, port string) {
 		//excluding the sender
 		if msg != "disconnect" {
 			for i := 0; i < len(connections); i++ {
-				if c != connections[i] && ports[i] == port && !strings.Contains(msg, ":") {
+				if c != connections[i] && serverPorts[i] == port && !strings.Contains(msg, ":9") {
 					err := gob.NewEncoder(connections[i]).Encode(msg)
 					if err != nil {
 						fmt.Println(err)
@@ -138,21 +150,21 @@ func main() {
 
 	//tcp connections to clients
 	//chat rooms
-	fmt.Println("Enter the first chat room thematic")
+	fmt.Println("Enter the first chat room topic")
 	scanner.Scan()
 	thematic = scanner.Text()
 	chatTopics = append(chatTopics, thematic)
 	chatUsers = append(chatUsers, 0)
 	go server(":9997", thematic)
 
-	fmt.Println("Enter the second chat room thematic")
+	fmt.Println("Enter the second chat room topic")
 	scanner.Scan()
 	thematic = scanner.Text()
 	chatTopics = append(chatTopics, thematic)
 	chatUsers = append(chatUsers, 0)
 	go server(":9998", thematic)
 
-	fmt.Println("Enter the third chat room thematic")
+	fmt.Println("Enter the third chat room topic")
 	scanner.Scan()
 	thematic = scanner.Text()
 	chatTopics = append(chatTopics, thematic)
@@ -163,7 +175,7 @@ func main() {
 	go rpcServer()
 
 	//holding server running
-	fmt.Println("\nStarting server...")
+	fmt.Println("\nRunning server...")
 	var input string
 	fmt.Scanln(&input)
 }
