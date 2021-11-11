@@ -25,14 +25,46 @@ func getServerIP() {
 ////MIDDLEWARE - CLIENT
 type Middleware struct{}
 
-func (this *Middleware) GetServerInfo(name string, reply *[]string) error {
+func (this *Middleware) GetServerPorts(name string, reply *[]string) error {
 	conn, err := rpc.Dial("tcp", ":9996")
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 	var result []string
-	err = conn.Call("Server.GetChatRoomsInfo", name, &result)
+	err = conn.Call("Server.GetPorts", name, &result)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		*reply = result
+	}
+	return nil
+}
+
+func (this *Middleware) GetServerTopics(name string, reply *[]string) error {
+	conn, err := rpc.Dial("tcp", ":9996")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	var result []string
+	err = conn.Call("Server.GetChatRoomsTopics", name, &result)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		*reply = result
+	}
+	return nil
+}
+
+func (this *Middleware) GetServerUsers(name string, reply *[]int64) error {
+	conn, err := rpc.Dial("tcp", ":9996")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	var result []int64
+	err = conn.Call("Server.GetChatRoomsUsers", name, &result)
 	if err != nil {
 		fmt.Println(err)
 	} else {
