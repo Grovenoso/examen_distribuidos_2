@@ -5,15 +5,21 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
+	"net/rpc"
 	"os"
 	"strings"
 )
 
 //global variables
 var (
+	//tcp
 	ports          []string   //ports keep the clients port connection
 	connections    []net.Conn //keeps every connection
 	newConnections []net.Conn //auxiliary slice
+
+	//rpc
+	chatTopics []string //keeps chats topics
+	chatUsers  []int64  //keeps the number of users connected per chat room
 )
 
 func server(port, thematic string) {
@@ -84,28 +90,60 @@ func handleClient(c net.Conn, port string) {
 	}
 }
 
+type Server struct{}
+
+func (this *Server) GetChatRoomsInfo(name string, reply *[]string) error {
+	*reply = chatTopics
+	return nil
+}
+
+//rpc Server registering
+func rpcServer() {
+	rpc.Register(new(Server))
+	ln, err := net.Listen("tcp", ":9996")
+	if err != nil {
+		fmt.Println(err)
+	}
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		go rpc.ServeConn(conn)
+	}
+}
+
 func main() {
 	var thematic string
 
 	scanner := bufio.NewScanner(os.Stdin)
 
+	//tcp connections to clients
+	//chat rooms
 	fmt.Println("Enter the first chat room thematic")
 	scanner.Scan()
 	thematic = scanner.Text()
+	chatTopics = append(chatTopics, thematic)
 	go server(":9999", thematic)
 
 	fmt.Println("Enter the second chat room thematic")
 	scanner.Scan()
 	thematic = scanner.Text()
+	chatTopics = append(chatTopics, thematic)
 	go server(":9998", thematic)
 
 	fmt.Println("Enter the third chat room thematic")
 	scanner.Scan()
 	thematic = scanner.Text()
+	chatTopics = append(chatTopics, thematic)
 	go server(":9997", thematic)
 
-	fmt.Println("\nStarting server...")
+	//rpc server
+	go rpcServer()
 
-	//goroutine server
-	fmt.Scanln()
+	//holding server running
+	fmt.Println("\nStarting server...")
+	var input string
+	fmt.Scanln(&input)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
+	"net/rpc"
 	"os"
 )
 
@@ -74,66 +75,59 @@ func runClient(userName, port string, status chan int, msg chan string) {
 	}
 }
 
+func getServerInfo() []string {
+	conn, err := rpc.Dial("tcp", ":9995")
+	if err != nil {
+		fmt.Println(err)
+	}
+	var result []string
+	var name string
+	err = conn.Call("Middleware.GetServerInfo", name, &result)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		return result
+	}
+	return nil
+}
+
 func main() {
 	var opc int
-	var port string
-	var status = make(chan int)
-	var msg = make(chan string)
+	//var port string
+	//var status = make(chan int)
+	//var msg = make(chan string)
 
-	//until the client enters their name
-	//the client won't connect to the server
 	fmt.Println("Enter your username")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	userName := scanner.Text()
 
-	//choose chat room
-	fmt.Println("Choose chat room" +
-		"\n1. Chat room 1" +
-		"\n2. Chat room 2" +
-		"\n3. Chat room 3")
+	fmt.Println("Welcome, " + userName + "!")
+	fmt.Println("Choose a chatroom from the ones below...")
 
-	fmt.Scanln(&opc)
-	switch opc {
-	case 1:
-		port = ":9997"
-	case 2:
-		port = ":9998"
-	case 3:
-		port = ":9999"
+	options := getServerInfo()
+
+	for i := 0; i < len(options); i++ {
+		fmt.Print(i + 1)
+		fmt.Println(". " + options[i])
 	}
-
-	//goroutine connecting to server
-	go runClient(userName, port, status, msg)
-	status <- 0
-
-	//main menu
-	fmt.Println("\nMenu" +
-		"\n 1. Send message" +
-		"\n 2. Stop client")
+	fmt.Println("Or enter 0 to exit")
 
 	//keep listening to user input
 	for {
 		fmt.Scanln(&opc)
-
 		switch opc {
-		//send message
 		case 1:
-			fmt.Println("Enter your message")
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			message := scanner.Text()
-			message = userName + ": " + message
-			status <- 1
-			msg <- message
-		//disconnect
+			fmt.Println("You chose chatroom 1: ", options[0])
 		case 2:
-			status <- 3
-			msg <- "disconnect"
+			fmt.Println("You chose chatroom 2: ", options[1])
+		case 3:
+			fmt.Println("You chose chatroom 3: ", options[2])
+		case 0:
+			fmt.Println("Goodbye!")
 			return
-		//any other input won't be accepted
 		default:
-			fmt.Println("\nWrong option")
+			fmt.Println("Wrong input")
 		}
 	}
 }
